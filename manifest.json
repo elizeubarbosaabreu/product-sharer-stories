@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Product Sharer Stories",
+  "version": "1.0",
+  "description": "Gere stories 9:16 para compartilhar produtos com QR code",
+  "permissions": ["activeTab", "scripting", "clipboardWrite"],
+  "host_permissions": [
+    "https://*.mercadolivre.com.br/*",
+    "https://*.mercadolibre.com/*",
+    "https://*.mlstatic.com/*",
+    "https://*.mlcdn.com.br/*",
+    "https://a-static.mlcdn.com.br/*",
+    "https://*.shopee.com.br/*",
+    "https://*.shopee.com/*",
+    "https://cf.shopee.com.br/*",
+    "https://down-id.img.susercontent.com/*",
+    "https://*.magazineluiza.com.br/*",
+    "https://*.magazinevoce.com.br/*",
+    "https://*.magalu.com.br/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Product Sharer Stories"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
