@@ -85,6 +85,10 @@ function extractShopee() {
                 document.querySelector('[class*="product-price"]') ||
                 document.querySelector('span[class*="price"]');
   if (priceEl) price = priceEl.textContent.trim().replace(/[^0-9,.]/g, '');
+  if (price) {
+    var priceMatch = price.match(/[\d.,]+?,\d{2}/);
+    if (priceMatch) price = priceMatch[0];
+  }
 
   var descEl = document.querySelector('.product-detail__description') ||
                document.querySelector('[class*="product-desc"]');
@@ -133,7 +137,7 @@ function extractMagalu() {
                 document.querySelector('[class*="price-value"]');
   if (priceEl) {
     var raw = priceEl.textContent.trim().replace(/[^0-9,.]/g, '');
-    var match = raw.match(/[\d]+[.,]\d{2}/);
+    var match = raw.match(/[\d.,]+?,\d{2}/);
     price = match ? match[0] : raw;
   }
 
