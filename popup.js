@@ -1,5 +1,7 @@
 var currentProduct = null;
 var generatedText = '';
+var allImages = [];
+var imgIndex = 0;
 
 function showStatus(msg, isError) {
   var el = document.getElementById('status');
@@ -15,6 +17,50 @@ function escAttr(s) {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function updateImgNav() {
+  var nav = document.getElementById('imgNav');
+  var thumb = document.getElementById('imgThumb');
+  var prev = document.getElementById('imgPrev');
+  var next = document.getElementById('imgNext');
+  var counter = document.getElementById('imgCounter');
+
+  if (allImages.length > 1) {
+    nav.style.display = 'block';
+    thumb.src = allImages[imgIndex];
+    thumb.onerror = function() { this.style.display = 'none'; };
+    thumb.style.display = 'block';
+    prev.style.display = imgIndex > 0 ? 'block' : 'none';
+    next.style.display = imgIndex < allImages.length - 1 ? 'block' : 'none';
+    counter.style.display = 'block';
+    counter.textContent = (imgIndex + 1) + ' / ' + allImages.length;
+    currentProduct.img = allImages[imgIndex];
+    currentProduct.imgDataUrl = '';
+    downloadCurrentImg();
+  } else if (allImages.length === 1) {
+    nav.style.display = 'block';
+    thumb.src = allImages[0];
+    thumb.style.display = 'block';
+    prev.style.display = 'none';
+    next.style.display = 'none';
+    counter.style.display = 'none';
+  } else {
+    nav.style.display = 'none';
+  }
+}
+
+function downloadCurrentImg() {
+  if (!currentProduct || !currentProduct.img) return;
+  showStatus('Baixando imagem...');
+  chrome.runtime.sendMessage({ action: 'fetchImage', url: currentProduct.img }, function(res) {
+    if (res && res.dataUrl) {
+      currentProduct.imgDataUrl = res.dataUrl;
+      console.log('[Stories] imagem baixada via background');
+    } else {
+      console.log('[Stories] background falhou, sem imagem no story');
+    }
+  });
+}
+
 function extractProduct() {
   showStatus('Extraindo produto...');
   document.getElementById('storyBtn').disabled = true;
@@ -27,10 +73,11 @@ function extractProduct() {
                   url.includes('mercadolibre.com') ||
                   url.includes('shopee.com.br') ||
                   url.includes('magazineluiza.com.br') ||
-                  url.includes('magazinevoce.com.br');
+                  url.includes('magazinevoce.com.br') ||
+                  url.includes('cursos24horas.com.br');
 
     if (!isStore) {
-      showStatus('Abra uma pagina de produto no ML, Shopee ou Magalu', true);
+      showStatus('Abra uma pagina de produto no ML, Shopee, Magalu ou Cursos 24H', true);
       return;
     }
 
@@ -52,17 +99,12 @@ function extractProduct() {
           return;
         }
         currentProduct = response;
+        allImages = response.allImages || (response.img ? [response.img] : []);
+        imgIndex = 0;
         showProduct(response);
-        if (response.img) {
-          showStatus('Baixando imagem...');
-          chrome.runtime.sendMessage({ action: 'fetchImage', url: response.img }, function(res) {
-            if (res && res.dataUrl) {
-              currentProduct.imgDataUrl = res.dataUrl;
-              console.log('[Stories] imagem baixada via background');
-            } else {
-              console.log('[Stories] background falhou, sem imagem no story');
-            }
-          });
+        if (allImages.length > 0) {
+          updateImgNav();
+          downloadCurrentImg();
         }
       });
     });
@@ -70,14 +112,16 @@ function extractProduct() {
 }
 
 function showProduct(data) {
-  var storeColors = { 'ML': '#FFE600', 'Shopee': '#EE4D2D', 'Magalu': '#0086FF' };
+  var storeColors = { 'ML': '#FFE600', 'Shopee': '#EE4D2D', 'Magalu': '#0086FF', 'Cursos24H': '#E67E22' };
   var storeColor = storeColors[data.store] || '#888';
 
+  var card = document.getElementById('productCard');
+  var nav = document.getElementById('imgNav');
+  card.innerHTML = '';
+  card.appendChild(nav);
+
   var html = '<div class="product-info">';
-  html += '<span class="store-badge" style="background:' + storeColor + '">' + data.store + '</span>';
-  if (data.img) {
-    html += '<img class="product-thumb" src="' + escAttr(data.img) + '" onerror="this.style.display=\'none\'">';
-  }
+  html += '<span class="store-badge" style="background:' + storeColor + '">' + escHtml(data.store) + '</span>';
   if (data.title) {
     html += '<div class="product-title">' + escHtml(data.title) + '</div>';
   }
@@ -86,8 +130,8 @@ function showProduct(data) {
   }
   html += '</div>';
 
-  document.getElementById('productCard').innerHTML = html;
-  document.getElementById('productCard').style.display = 'block';
+  card.insertAdjacentHTML('beforeend', html);
+  card.style.display = 'block';
   document.getElementById('storyBtn').style.display = 'block';
   document.getElementById('storyBtn').disabled = false;
   showStatus('Produto extraido. Clique para gerar story.');
@@ -173,7 +217,7 @@ function drawImageOnCanvas(ctx, img, w, h, pad) {
   imgW *= scale;
   imgH *= scale;
   var imgX = (w - imgW) / 2;
-  var imgY = pad;
+  var imgY = pad + (maxH - imgH) / 2;
 
   ctx.shadowColor = 'rgba(0,0,0,0.5)';
   ctx.shadowBlur = 30;
@@ -298,6 +342,12 @@ document.getElementById('copyBtn').addEventListener('click', function() {
   navigator.clipboard.writeText(generatedText).then(function() {
     showStatus('Texto copiado!');
   });
+});
+document.getElementById('imgPrev').addEventListener('click', function() {
+  if (imgIndex > 0) { imgIndex--; updateImgNav(); }
+});
+document.getElementById('imgNext').addEventListener('click', function() {
+  if (imgIndex < allImages.length - 1) { imgIndex++; updateImgNav(); }
 });
 
 extractProduct();
