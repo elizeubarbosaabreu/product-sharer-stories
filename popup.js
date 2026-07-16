@@ -280,10 +280,10 @@ function drawQR(ctx, product, w, h, pad) {
   ctx.shadowColor = 'transparent';
   ctx.drawImage(qrCanvas, qrX, qrY, size, size);
 
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.font = '36px Arial, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '24px Arial, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Escaneie para ver o produto', w / 2, qrY + size + 50);
+  ctx.fillText('Promoção por tempo limitado', w / 2, h - pad + 10);
 }
 
 function finishStory(preview, storyBtn) {
