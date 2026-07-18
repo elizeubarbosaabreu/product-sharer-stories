@@ -236,7 +236,7 @@ function drawText(ctx, product, w, h, pad) {
     ctx.fillStyle = '#e94560';
     ctx.font = 'bold 44px Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('R$ ' + product.price, w / 2, textY);
+    ctx.fillText('R$ ' + product.price + '*', w / 2, textY);
     textY += 70;
   }
 
@@ -281,9 +281,9 @@ function drawQR(ctx, product, w, h, pad) {
   ctx.drawImage(qrCanvas, qrX, qrY, size, size);
 
   ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  ctx.font = '24px Arial, sans-serif';
+  ctx.font = '28px Arial, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Promoção por tempo limitado', w / 2, h - pad + 10);
+  ctx.fillText('*Pode haver pequenas variações no valor exibido.', w / 2, h - pad + 10);
 }
 
 function finishStory(preview, storyBtn) {
