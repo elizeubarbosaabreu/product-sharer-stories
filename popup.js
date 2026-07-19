@@ -2,6 +2,8 @@ var currentProduct = null;
 var generatedText = '';
 var allImages = [];
 var imgIndex = 0;
+var couponCode = '';
+var couponDiscount = '';
 
 function showStatus(msg, isError) {
   var el = document.getElementById('status');
@@ -117,6 +119,7 @@ function showProduct(data) {
 
   var card = document.getElementById('productCard');
   var nav = document.getElementById('imgNav');
+  var couponWrap = document.getElementById('couponWrap');
   card.innerHTML = '';
   card.appendChild(nav);
 
@@ -131,7 +134,13 @@ function showProduct(data) {
   html += '</div>';
 
   card.insertAdjacentHTML('beforeend', html);
+  card.appendChild(couponWrap);
   card.style.display = 'block';
+
+  couponWrap.style.display = 'block';
+  document.getElementById('couponInput').value = couponCode;
+  document.getElementById('couponDiscount').value = couponDiscount;
+
   document.getElementById('storyBtn').style.display = 'block';
   document.getElementById('storyBtn').disabled = false;
   showStatus('Produto extraido. Clique para gerar story.');
@@ -175,6 +184,7 @@ function doGenerate() {
         try {
           drawImageOnCanvas(ctx, img, storyWidth, storyHeight, padding);
           drawText(ctx, currentProduct, storyWidth, storyHeight, padding);
+          drawCoupon(ctx, currentProduct, storyWidth, storyHeight, padding);
           drawQR(ctx, currentProduct, storyWidth, storyHeight, padding);
           finishStory(preview, storyBtn);
         } catch (e) {
@@ -187,6 +197,7 @@ function doGenerate() {
         console.log('[Stories] imagem falhou, gerando sem imagem');
         try {
           drawText(ctx, currentProduct, storyWidth, storyHeight, padding);
+          drawCoupon(ctx, currentProduct, storyWidth, storyHeight, padding);
           drawQR(ctx, currentProduct, storyWidth, storyHeight, padding);
           finishStory(preview, storyBtn);
         } catch (e) {
@@ -197,6 +208,7 @@ function doGenerate() {
       img.src = imgSrc;
     } else {
       drawText(ctx, currentProduct, storyWidth, storyHeight, padding);
+      drawCoupon(ctx, currentProduct, storyWidth, storyHeight, padding);
       drawQR(ctx, currentProduct, storyWidth, storyHeight, padding);
       finishStory(preview, storyBtn);
     }
@@ -290,6 +302,8 @@ function finishStory(preview, storyBtn) {
   var canvas = document.getElementById('canvas');
   generatedText = (currentProduct.title || 'Produto');
   if (currentProduct.price) generatedText += '\nR$ ' + currentProduct.price;
+  if (couponCode) generatedText += '\n\nCUPOM: ' + couponCode.toUpperCase();
+  if (couponDiscount.trim()) generatedText += '\nDESCONTO: ' + couponDiscount.trim().toUpperCase();
   generatedText += '\n\nConfira este produto!\n' + currentProduct.link;
 
   preview.src = canvas.toDataURL('image/png');
@@ -298,6 +312,44 @@ function finishStory(preview, storyBtn) {
   document.getElementById('copyBtn').style.display = 'block';
   storyBtn.disabled = false;
   showStatus('Story gerado!');
+}
+
+function drawCoupon(ctx, product, w, h, pad) {
+  if (!couponCode) return;
+
+  var label = 'CUPOM';
+  var code = couponCode.toUpperCase();
+  var discount = couponDiscount.trim().toUpperCase();
+
+  ctx.font = 'bold 32px Arial, sans-serif';
+  var labelW = ctx.measureText(label).width;
+  ctx.font = 'bold 42px Arial, sans-serif';
+  var codeW = ctx.measureText(code).width;
+  var bw = Math.max(labelW, codeW) + 60;
+  var bh = discount ? 160 : 110;
+  var bx = pad;
+  var by = pad;
+
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 6;
+  roundRect(ctx, bx, by, bw, bh, 16);
+  ctx.fillStyle = '#e94560';
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 32px Arial, sans-serif';
+  ctx.fillText(label, bx + bw / 2, by + 38);
+
+  ctx.font = 'bold 42px Arial, sans-serif';
+  ctx.fillText(code, bx + bw / 2, by + 88);
+
+  if (discount) {
+    ctx.font = 'bold 42px Arial, sans-serif';
+    ctx.fillText(discount, bx + bw / 2, by + 138);
+  }
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -332,6 +384,12 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 document.getElementById('storyBtn').addEventListener('click', doGenerate);
+document.getElementById('couponInput').addEventListener('input', function() {
+  couponCode = this.value.trim();
+});
+document.getElementById('couponDiscount').addEventListener('input', function() {
+  couponDiscount = this.value.trim();
+});
 document.getElementById('downloadBtn').addEventListener('click', function() {
   var link = document.createElement('a');
   link.download = 'story-' + Date.now() + '.png';

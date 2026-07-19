@@ -51,6 +51,16 @@
     .btn-story { background: #e94560; color: #fff; display: none; }
     .btn-download { background: #0f3460; color: #fff; display: none; }
     .btn-copy { background: #533483; color: #fff; display: none; }
+    .coupon-wrap { display: none; margin-top: 8px; }
+    .coupon-fields { display: flex; gap: 6px; }
+    .coupon-fields input {
+      padding: 8px 10px; border-radius: 6px; border: 1px solid #333;
+      background: #0f3460; color: #fff; font-size: 12px; outline: none;
+    }
+    .coupon-fields input::placeholder { color: #666; }
+    .coupon-fields input:focus { border-color: #e94560; }
+    .coupon-fields .coupon-code { flex: 1; }
+    .coupon-fields .coupon-discount { width: 90px; }
     .preview { width: 100%; margin-top: 10px; border-radius: 6px; display: none; }
   </style>
 </head>
@@ -63,6 +73,12 @@
       <button class="img-nav-arrow right" id="imgNext">&#8250;</button>
       <img class="product-thumb" id="imgThumb">
       <div class="img-nav-counter" id="imgCounter"></div>
+    </div>
+    <div class="coupon-wrap" id="couponWrap">
+      <div class="coupon-fields">
+        <input type="text" id="couponInput" class="coupon-code" placeholder="Cupom (opcional)" maxlength="30">
+        <input type="text" id="couponDiscount" class="coupon-discount" placeholder="Desconto" maxlength="10">
+      </div>
     </div>
   </div>
   <button class="btn btn-story" id="storyBtn">Gerar Story 9:16</button>
